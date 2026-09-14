@@ -1,0 +1,600 @@
+id: vehicle
+
+requirements:
+  - name: ecoscope-platform
+    version: ">=2.17.0,<3.0.0"
+    channel: https://repo.prefix.dev/ecoscope-workflows/
+
+  - name: ecoscope-workflows-ext-custom
+    version: "0.1.0rc23"
+    channel: https://repo.prefix.dev/ecoscope-workflows-custom/
+
+  - name: pydeck
+    version: 0.9.2
+    channel: conda-forge
+
+  - name: ecoscope-workflows-ext-apn
+    version: "0.0.30"
+    channel: https://repo.prefix.dev/ecoscope-workflows-custom/
+
+rjsf-overrides:
+  properties:
+    patente.properties.var.title: "Patente"
+    Driver Ranking Table.properties.driver_ranking_table.title: ""
+    Driver Ranking Table.properties.driver_ranking_table.properties.table_config.properties.enable_sorting.default: true
+    Driver Ranking Table.properties.driver_ranking_table.properties.table_config.properties.enable_filtering.default: true
+    Driver Ranking Table.properties.driver_ranking_table.properties.table_config.properties.enable_download.default: true
+    Vehicle Usage Table.properties.vehicle_usage_table.title: ""
+    Vehicle Usage Table.properties.vehicle_usage_table.properties.table_config.properties.enable_sorting.default: true
+    Vehicle Usage Table.properties.vehicle_usage_table.properties.table_config.properties.enable_filtering.default: true
+    Vehicle Usage Table.properties.vehicle_usage_table.properties.table_config.properties.enable_download.default: true
+    Fuel Refill Table.properties.refuel_table.title: ""
+    Fuel Refill Table.properties.refuel_table.properties.table_config.properties.enable_sorting.default: true
+    Fuel Refill Table.properties.refuel_table.properties.table_config.properties.enable_filtering.default: true
+    Fuel Refill Table.properties.refuel_table.properties.table_config.properties.enable_download.default: true
+
+task-instance-defaults:
+  skipif:
+    conditions:
+      - any_is_empty_df
+      - any_dependency_skipped
+
+workflow:
+  - name: Set Workflow Details
+    id: workflow_details
+    task: set_workflow_details
+
+  - name: Data Source
+    id: er_client
+    task: set_er_connection
+
+  - name: Define Base Maps
+    id: base_maps
+    task: set_base_maps
+
+  - name: Set Locale
+    id: locale
+    task: set_locale
+    partial:
+      locale_str: es_ES
+
+  - name: Time Range
+    id: time_range
+    task: set_time_range
+    partial:
+      time_format: "%d %b %Y %H:%M:%S"
+
+  - name: Extract Timezone Selection
+    id: get_timezone
+    task: get_timezone_from_time_range
+    partial:
+      time_range: ${{ workflow.time_range.return }}
+
+  # Vehicle patente to report on — drives the filter below
+  - name: Patente del Vehículo
+    id: patente
+    task: set_string_var
+
+  # Fetch all "Libro Diario Vehicular" events for the time range
+  - name: Libro Diario Vehicular Events
+    id: events
+    task: get_events
+    partial:
+      client: ${{ workflow.er_client.return }}
+      time_range: ${{ workflow.time_range.return }}
+      event_columns:
+        - id
+        - time
+        - priority
+        - event_type
+        - location
+        - event_category
+        - reported_by
+        - serial_number
+        - state
+        - geometry
+        - event_details
+      event_types:
+        - libro_diario_vehicular_v2
+      include_details: true
+      raise_on_empty: false
+      include_updates: false
+      include_null_geometry: true
+      include_display_values: true
+      include_related_events: false
+
+  - title: Process and Filter Vehicle
+    type: task-group
+    description: "Resolve display values, extract patente, filter to selected vehicle."
+    tasks:
+      - name: Process Event Details
+        id: processed_events
+        task: process_events_details
+        partial:
+          df: ${{ workflow.events.return }}
+          client: ${{ workflow.er_client.return }}
+          map_to_titles: false
+          ordered: true
+
+      - name: Extract Vehicle Plate
+        id: extract_patente
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.processed_events.return }}
+          column_name: event_details
+          field_name_options:
+            - Patente
+          output_column_name: patente
+          output_type: str
+
+      - name: Filter to Selected Vehicle
+        id: vehicle_data
+        task: filter_df
+        partial:
+          df: ${{ workflow.extract_patente.return }}
+          column_name: patente
+          op: equal
+          value: ${{ workflow.patente.return }}
+          reset_index: false
+
+  - title: Extract Vehicle Fields
+    type: task-group
+    description: "Extract all fields from event_details on the filtered vehicle rows."
+    tasks:
+      - name: Extract Departure KM
+        id: extract_km_salida
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.vehicle_data.return }}
+          column_name: event_details
+          field_name_options:
+            - KM_de_salida
+          output_column_name: km_salida
+          output_type: float
+
+      - name: Extract Arrival KM
+        id: extract_km_llegada
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.extract_km_salida.return }}
+          column_name: event_details
+          field_name_options:
+            - Km_de_llegada
+          output_column_name: km_llegada
+          output_type: float
+
+      - name: Extract Fuel Loaded
+        id: extract_litros
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.extract_km_llegada.return }}
+          column_name: event_details
+          field_name_options:
+            - Litros_cargados
+          output_column_name: litros_cargados
+          output_type: float
+
+      - name: Extract Fuel Type
+        id: extract_tipo_combustible
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.extract_litros.return }}
+          column_name: event_details
+          field_name_options:
+            - Tipo_de_combustible
+          output_column_name: tipo_combustible
+          output_type: str
+
+      - name: Count Passengers
+        id: extract_ocupantes
+        task: extract_array_length_from_json_column
+        partial:
+          df: ${{ workflow.extract_tipo_combustible.return }}
+          column_name: event_details
+          field_name: Pasajeros
+          output_column_name: ocupantes
+
+      - name: Extract Trip Purpose
+        id: extract_objetivo
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.extract_ocupantes.return }}
+          column_name: event_details
+          field_name_options:
+            - Motivo_del_desplazamiento
+          output_column_name: objetivo
+          output_type: str
+
+      - name: Format Trip Purpose
+        id: format_objetivo
+        task: join_list_column
+        partial:
+          df: ${{ workflow.extract_objetivo.return }}
+          column_name: objetivo
+          separator: ", "
+
+      - name: Extract Trip Origin
+        id: extract_origen
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.format_objetivo.return }}
+          column_name: event_details
+          field_name_options:
+            - Origen_del_desplazamiento
+          output_column_name: origen
+          output_type: str
+
+      - name: Extract Destination
+        id: extract_destino
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.extract_origen.return }}
+          column_name: event_details
+          field_name_options:
+            - Destino
+          output_column_name: destino
+          output_type: str
+
+      - name: Extract Return Time
+        id: extract_hora_llegada
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.extract_destino.return }}
+          column_name: event_details
+          field_name_options:
+            - Regreso
+          output_column_name: regreso
+          output_type: str
+
+      - name: Extract Driver
+        id: extract_chofer
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.extract_hora_llegada.return }}
+          column_name: event_details
+          field_name_options:
+            - Chofer
+          output_column_name: chofer
+          output_type: str
+
+      - name: Extract Refuel Method
+        id: extract_forma_recarga
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.extract_chofer.return }}
+          column_name: event_details
+          field_name_options:
+            - Forma_de_recarga
+          output_column_name: forma_recarga
+          output_type: str
+
+      - name: Extract Responsible for Refuel
+        id: extract_responsable_recarga
+        task: extract_value_from_json_column
+        partial:
+          df: ${{ workflow.extract_forma_recarga.return }}
+          column_name: event_details
+          field_name_options:
+            - Responsable_de_la_recarga
+          output_column_name: responsable_recarga
+          output_type: str
+
+      - name: Calculate KM Travelled per Journey
+        id: km_por_viaje
+        task: apply_arithmetic_operation_over_rows
+        partial:
+          df: ${{ workflow.extract_responsable_recarga.return }}
+          column_a: km_llegada
+          column_b: km_salida
+          output_column: km_viaje
+          operation: subtract
+
+  - title: Vehicle Statistics Cards
+    type: task-group
+    description: "Four stat cards summarising the selected vehicle over the chosen period."
+    tasks:
+      - name: Calculate Total Journeys
+        id: total_journeys
+        task: dataframe_count
+        partial:
+          df: ${{ workflow.km_por_viaje.return }}
+
+      - name: Create Total Journeys Widget
+        id: total_journeys_sv
+        task: create_single_value_widget_single_view
+        skipif:
+          conditions:
+            - never
+        partial:
+          title: "Total de desplazamientos"
+          decimal_places: 0
+          data: ${{ workflow.total_journeys.return }}
+
+      - name: Calculate Total KM Travelled
+        id: total_km
+        task: dataframe_column_sum
+        partial:
+          df: ${{ workflow.km_por_viaje.return }}
+          column_name: km_viaje
+
+      - name: Create Total KM Widget
+        id: total_km_sv
+        task: create_single_value_widget_single_view
+        skipif:
+          conditions:
+            - never
+        partial:
+          title: "Kilómetros totales recorridos"
+          decimal_places: 0
+          data: ${{ workflow.total_km.return }}
+
+      - name: Calculate Total Fuel Consumed
+        id: total_fuel
+        task: dataframe_column_sum
+        partial:
+          df: ${{ workflow.km_por_viaje.return }}
+          column_name: litros_cargados
+
+      - name: Total Fuel as Quantity
+        id: total_fuel_q
+        task: to_quantity
+        partial:
+          value: ${{ workflow.total_fuel.return }}
+          unit: "L"
+
+      - name: Create Total Fuel Widget
+        id: total_fuel_sv
+        task: create_single_value_widget_single_view
+        skipif:
+          conditions:
+            - never
+        partial:
+          title: "Total de combustible consumido"
+          decimal_places: 0
+          data: ${{ workflow.total_fuel_q.return }}
+
+      - name: Calculate Average Occupants
+        id: avg_occupants
+        task: dataframe_column_mean
+        partial:
+          df: ${{ workflow.km_por_viaje.return }}
+          column_name: ocupantes
+
+      - name: Create Average Occupants Widget
+        id: avg_occupants_sv
+        task: create_single_value_widget_single_view
+        skipif:
+          conditions:
+            - never
+        partial:
+          title: "Promedio de ocupantes"
+          decimal_places: 1
+          data: ${{ workflow.avg_occupants.return }}
+
+  - title: KM Over Time Chart
+    type: task-group
+    description: "Monthly bar chart of kilometres travelled for the selected vehicle."
+    tasks:
+      - id: km_over_time_chart
+        task: draw_time_series_bar_chart_grouped
+        partial:
+          dataframe: ${{ workflow.km_por_viaje.return }}
+          x_axis: time
+          y_axis: km_viaje
+          category: patente
+          agg_function: sum
+          time_interval: month
+          layout_style:
+            title: "Kilómetros recorridos en el tiempo"
+            title_x: 0.5
+            font_size: null
+            font_color: null
+            font_style: null
+            plot_bgcolor: null
+            showlegend: false
+            hovermode: "x unified"
+            legend_title: null
+            xaxis:
+              title: "Mes"
+              range: null
+            yaxis:
+              title: "Kilómetros (km)"
+              range: null
+            bargap: 0.2
+            bargroupgap: 0.1
+
+      - name: Persist KM Over Time Chart
+        id: km_over_time_chart_html
+        task: persist_text
+        partial:
+          text: ${{ workflow.km_over_time_chart.return }}
+          root_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+          filename_suffix: km_over_time_chart
+
+      - name: Create KM Over Time Chart Widget
+        id: km_over_time_chart_sv
+        task: create_plot_widget_single_view
+        skipif:
+          conditions:
+            - never
+        partial:
+          title: "Kilómetros recorridos en el tiempo"
+          data: ${{ workflow.km_over_time_chart_html.return }}
+
+  - title: Driver Ranking Table
+    type: task-group
+    description: "Drivers ranked by total km and journey count."
+    tasks:
+      - name: Summarise by Driver
+        id: driver_ranking_data
+        task: summarize_df
+        partial:
+          df: ${{ workflow.km_por_viaje.return }}
+          groupby_cols:
+            - chofer
+          reset_index: true
+          summary_params:
+            - display_name: "Kilómetros recorridos"
+              aggregator: sum
+              column: km_viaje
+              decimal_places: 0
+            - display_name: "Cantidad de desplazamientos"
+              aggregator: count
+              column: km_viaje
+              decimal_places: 0
+
+      - name: Rename Driver Column
+        id: driver_ranking_columns
+        task: map_columns
+        partial:
+          df: ${{ workflow.driver_ranking_data.return }}
+          raise_if_not_found: false
+          retain_columns:
+            - chofer
+            - "Kilómetros recorridos"
+            - "Cantidad de desplazamientos"
+          rename_columns:
+            chofer: "Nombre"
+          drop_columns: null
+
+      - name: Draw Driver Ranking Table
+        id: driver_ranking_table
+        task: draw_table
+        partial:
+          dataframe: ${{ workflow.driver_ranking_columns.return }}
+
+      - name: Persist Driver Ranking Table
+        id: driver_ranking_table_html
+        task: persist_text
+        partial:
+          text: ${{ workflow.driver_ranking_table.return }}
+          root_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+          filename_suffix: driver_ranking_table
+
+      - name: Create Driver Ranking Widget
+        id: driver_ranking_sv
+        task: create_plot_widget_single_view
+        skipif:
+          conditions:
+            - never
+        partial:
+          title: "Ranking de choferes"
+          data: ${{ workflow.driver_ranking_table_html.return }}
+
+  - title: Vehicle Usage Table
+    type: task-group
+    description: "Full trip log for the selected vehicle."
+    tasks:
+      - name: Select Columns for Vehicle Usage Table
+        id: vehicle_usage_columns
+        task: map_columns
+        partial:
+          df: ${{ workflow.km_por_viaje.return }}
+          raise_if_not_found: false
+          retain_columns:
+            - time
+            - regreso
+            - litros_cargados
+            - tipo_combustible
+            - objetivo
+            - origen
+            - destino
+            - km_viaje
+          rename_columns:
+            time: "Fecha de inicio"
+            regreso: "Fecha de fin"
+            litros_cargados: "Cantidad de combustible (litros)"
+            tipo_combustible: "Tipo de combustible"
+            objetivo: "Objetivo"
+            origen: "Origen"
+            destino: "Destino"
+            km_viaje: "Distancia recorrida (km)"
+          drop_columns: null
+
+      - name: Draw Vehicle Usage Table
+        id: vehicle_usage_table
+        task: draw_table
+        partial:
+          dataframe: ${{ workflow.vehicle_usage_columns.return }}
+
+      - name: Persist Vehicle Usage Table
+        id: vehicle_usage_table_html
+        task: persist_text
+        partial:
+          text: ${{ workflow.vehicle_usage_table.return }}
+          root_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+          filename_suffix: vehicle_usage_table
+
+      - name: Create Vehicle Usage Widget
+        id: vehicle_usage_sv
+        task: create_plot_widget_single_view
+        skipif:
+          conditions:
+            - never
+        partial:
+          title: "Uso del Vehículo"
+          data: ${{ workflow.vehicle_usage_table_html.return }}
+
+  - title: Fuel Refill Table
+    type: task-group
+    description: "Fuel refill events for the selected vehicle."
+    tasks:
+      - name: Select Columns for Fuel Refill Table
+        id: refuel_columns
+        task: map_columns
+        partial:
+          df: ${{ workflow.km_por_viaje.return }}
+          raise_if_not_found: false
+          retain_columns:
+            - time
+            - forma_recarga
+            - tipo_combustible
+            - litros_cargados
+            - responsable_recarga
+          rename_columns:
+            time: "Fecha"
+            forma_recarga: "Estación de servicio"
+            tipo_combustible: "Tipo de combustible"
+            litros_cargados: "Litros cargados"
+            responsable_recarga: "Responsable de la carga"
+          drop_columns: null
+
+      - name: Draw Fuel Refill Table
+        id: refuel_table
+        task: draw_table
+        partial:
+          dataframe: ${{ workflow.refuel_columns.return }}
+
+      - name: Persist Fuel Refill Table
+        id: refuel_table_html
+        task: persist_text
+        partial:
+          text: ${{ workflow.refuel_table.return }}
+          root_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+          filename_suffix: refuel_table
+
+      - name: Create Fuel Refill Widget
+        id: refuel_sv
+        task: create_plot_widget_single_view
+        skipif:
+          conditions:
+            - never
+        partial:
+          title: "Recargas de combustible"
+          data: ${{ workflow.refuel_table_html.return }}
+
+  - name: Create Dashboard
+    id: dashboard
+    task: gather_apn_dashboard
+    partial:
+      details: ${{ workflow.workflow_details.return }}
+      widgets:
+        - ${{ workflow.total_journeys_sv.return }}
+        - ${{ workflow.total_km_sv.return }}
+        - ${{ workflow.total_fuel_sv.return }}
+        - ${{ workflow.avg_occupants_sv.return }}
+        - ${{ workflow.km_over_time_chart_sv.return }}
+        - ${{ workflow.driver_ranking_sv.return }}
+        - ${{ workflow.vehicle_usage_sv.return }}
+        - ${{ workflow.refuel_sv.return }}
+      time_range: ${{ workflow.time_range.return }}

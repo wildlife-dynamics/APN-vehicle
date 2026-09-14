@@ -1,0 +1,16 @@
+workflow_details:
+  description: ""
+  name: Vehicle
+er_client:
+  data_source:
+    name: apn
+patente:
+  var: "FMC-991"
+time_range:
+  timezone:
+    label: Africa/Nairobi
+    tzCode: EAT
+    name: Nairobi
+    utc: +03:00
+  since: "2025-01-01T00:00:00.000Z"
+  until: "2026-04-01T23:59:00.000Z"

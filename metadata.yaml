@@ -1,0 +1,15 @@
+name: Vehicle
+author:
+  name: ""
+  organization: APN
+  email: ""
+description: >
+  Individual vehicle dashboard for Argentina's national parks agency
+  (Administración de Parques Nacionales — APN). Pulls "Libro Diario Vehicular"
+  (Vehicle Daily Log) events for a single vehicle plate over a time range and
+  reports total journeys, distance travelled, fuel consumed, and average
+  occupants, alongside a driver ranking, a full trip log, and a fuel-refill
+  log.
+theory: ""
+output_comment: ""
+citation: ""

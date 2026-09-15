@@ -286,6 +286,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Patente"],
             output_column_name="patente",
             output_type="str",
+            fan_out=True,
             **(params.get("extract_patente") or {}),
         )
         .call()
@@ -334,6 +335,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["KM_de_salida"],
             output_column_name="km_salida",
             output_type="float",
+            fan_out=True,
             **(params.get("extract_km_salida") or {}),
         )
         .call()
@@ -358,6 +360,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Km_de_llegada"],
             output_column_name="km_llegada",
             output_type="float",
+            fan_out=True,
             **(params.get("extract_km_llegada") or {}),
         )
         .call()
@@ -382,6 +385,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Litros_cargados"],
             output_column_name="litros_cargados",
             output_type="float",
+            fan_out=True,
             **(params.get("extract_litros") or {}),
         )
         .call()
@@ -406,6 +410,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Tipo_de_combustible"],
             output_column_name="tipo_combustible",
             output_type="str",
+            fan_out=True,
             **(params.get("extract_tipo_combustible") or {}),
         )
         .call()
@@ -453,6 +458,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Motivo_del_desplazamiento"],
             output_column_name="objetivo",
             output_type="str",
+            fan_out=True,
             **(params.get("extract_objetivo") or {}),
         )
         .call()
@@ -499,6 +505,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Origen_del_desplazamiento"],
             output_column_name="origen",
             output_type="str",
+            fan_out=True,
             **(params.get("extract_origen") or {}),
         )
         .call()
@@ -523,6 +530,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Destino"],
             output_column_name="destino",
             output_type="str",
+            fan_out=True,
             **(params.get("extract_destino") or {}),
         )
         .call()
@@ -547,6 +555,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Regreso"],
             output_column_name="regreso",
             output_type="str",
+            fan_out=True,
             **(params.get("extract_hora_llegada") or {}),
         )
         .call()
@@ -571,6 +580,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Chofer"],
             output_column_name="chofer",
             output_type="str",
+            fan_out=True,
             **(params.get("extract_chofer") or {}),
         )
         .call()
@@ -595,6 +605,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Forma_de_recarga"],
             output_column_name="forma_recarga",
             output_type="str",
+            fan_out=True,
             **(params.get("extract_forma_recarga") or {}),
         )
         .call()
@@ -619,6 +630,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             field_name_options=["Responsable_de_la_recarga"],
             output_column_name="responsable_recarga",
             output_type="str",
+            fan_out=True,
             **(params.get("extract_responsable_recarga") or {}),
         )
         .call()
@@ -968,6 +980,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             ],
             rename_columns={"chofer": "Nombre"},
             drop_columns=None,
+            duplicate_strategy="suffix",
             **(params.get("driver_ranking_columns") or {}),
         )
         .call()
@@ -1072,6 +1085,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
                 "km_viaje": "Distancia recorrida (km)",
             },
             drop_columns=None,
+            duplicate_strategy="suffix",
             **(params.get("vehicle_usage_columns") or {}),
         )
         .call()
@@ -1169,6 +1183,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
                 "responsable_recarga": "Responsable de la carga",
             },
             drop_columns=None,
+            duplicate_strategy="suffix",
             **(params.get("refuel_columns") or {}),
         )
         .call()

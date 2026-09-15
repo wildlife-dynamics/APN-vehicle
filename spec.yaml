@@ -126,6 +126,7 @@ workflow:
             - Patente
           output_column_name: patente
           output_type: str
+          fan_out: true
 
       - name: Filter to Selected Vehicle
         id: vehicle_data
@@ -151,6 +152,7 @@ workflow:
             - KM_de_salida
           output_column_name: km_salida
           output_type: float
+          fan_out: true
 
       - name: Extract Arrival KM
         id: extract_km_llegada
@@ -162,6 +164,7 @@ workflow:
             - Km_de_llegada
           output_column_name: km_llegada
           output_type: float
+          fan_out: true
 
       - name: Extract Fuel Loaded
         id: extract_litros
@@ -173,6 +176,7 @@ workflow:
             - Litros_cargados
           output_column_name: litros_cargados
           output_type: float
+          fan_out: true
 
       - name: Extract Fuel Type
         id: extract_tipo_combustible
@@ -184,6 +188,7 @@ workflow:
             - Tipo_de_combustible
           output_column_name: tipo_combustible
           output_type: str
+          fan_out: true
 
       - name: Count Passengers
         id: extract_ocupantes
@@ -204,6 +209,7 @@ workflow:
             - Motivo_del_desplazamiento
           output_column_name: objetivo
           output_type: str
+          fan_out: true
 
       - name: Format Trip Purpose
         id: format_objetivo
@@ -223,6 +229,7 @@ workflow:
             - Origen_del_desplazamiento
           output_column_name: origen
           output_type: str
+          fan_out: true
 
       - name: Extract Destination
         id: extract_destino
@@ -234,6 +241,7 @@ workflow:
             - Destino
           output_column_name: destino
           output_type: str
+          fan_out: true
 
       - name: Extract Return Time
         id: extract_hora_llegada
@@ -245,6 +253,7 @@ workflow:
             - Regreso
           output_column_name: regreso
           output_type: str
+          fan_out: true
 
       - name: Extract Driver
         id: extract_chofer
@@ -256,6 +265,7 @@ workflow:
             - Chofer
           output_column_name: chofer
           output_type: str
+          fan_out: true
 
       - name: Extract Refuel Method
         id: extract_forma_recarga
@@ -267,6 +277,7 @@ workflow:
             - Forma_de_recarga
           output_column_name: forma_recarga
           output_type: str
+          fan_out: true
 
       - name: Extract Responsible for Refuel
         id: extract_responsable_recarga
@@ -278,6 +289,7 @@ workflow:
             - Responsable_de_la_recarga
           output_column_name: responsable_recarga
           output_type: str
+          fan_out: true
 
       - name: Calculate KM Travelled per Journey
         id: km_por_viaje
@@ -456,6 +468,7 @@ workflow:
           rename_columns:
             chofer: "Nombre"
           drop_columns: null
+          duplicate_strategy: suffix
 
       - name: Draw Driver Ranking Table
         id: driver_ranking_table
@@ -510,6 +523,7 @@ workflow:
             destino: "Destino"
             km_viaje: "Distancia recorrida (km)"
           drop_columns: null
+          duplicate_strategy: suffix
 
       - name: Draw Vehicle Usage Table
         id: vehicle_usage_table
@@ -558,6 +572,7 @@ workflow:
             litros_cargados: "Litros cargados"
             responsable_recarga: "Responsable de la carga"
           drop_columns: null
+          duplicate_strategy: suffix
 
       - name: Draw Fuel Refill Table
         id: refuel_table

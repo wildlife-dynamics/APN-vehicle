@@ -319,188 +319,6 @@
       "type": "object",
       "title": "Libro Diario Vehicular Events"
     },
-    "Process and Filter Vehicle": {
-      "type": "object",
-      "description": "Resolve display values, extract patente, filter to selected vehicle.",
-      "ecoscope:task_group": true,
-      "properties": {
-        "extract_patente": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Vehicle Plate"
-        }
-      }
-    },
-    "Extract Vehicle Fields": {
-      "type": "object",
-      "description": "Extract all fields from event_details on the filtered vehicle rows.",
-      "ecoscope:task_group": true,
-      "properties": {
-        "extract_km_salida": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Departure KM"
-        },
-        "extract_km_llegada": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Arrival KM"
-        },
-        "extract_litros": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Fuel Loaded"
-        },
-        "extract_tipo_combustible": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Fuel Type"
-        },
-        "extract_objetivo": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Trip Purpose"
-        },
-        "extract_origen": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Trip Origin"
-        },
-        "extract_destino": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Destination"
-        },
-        "extract_hora_llegada": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Return Time"
-        },
-        "extract_chofer": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Driver"
-        },
-        "extract_forma_recarga": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Refuel Method"
-        },
-        "extract_responsable_recarga": {
-          "additionalProperties": false,
-          "properties": {
-            "fan_out": {
-              "default": true,
-              "title": "Fan Out",
-              "type": "boolean",
-              "description": "Only used when output_type is 'series'. If true (default), expand the extracted collection into indexed columns prefixed by output_column_name. If false, store it as a list in a single output_column_name column."
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Extract Responsible for Refuel"
-        }
-      }
-    },
     "KM Over Time Chart": {
       "type": "object",
       "description": "Monthly bar chart of kilometres travelled for the selected vehicle.",
@@ -530,27 +348,6 @@
       "description": "Drivers ranked by total km and journey count.",
       "ecoscope:task_group": true,
       "properties": {
-        "driver_ranking_columns": {
-          "additionalProperties": false,
-          "properties": {
-            "duplicate_strategy": {
-              "default": "suffix",
-              "enum": [
-                "suffix",
-                "skip",
-                "overwrite",
-                "error"
-              ],
-              "title": "Duplicate Strategy",
-              "type": "string",
-              "description": "Strategy for handling a rename whose new name is already taken. 'suffix': append _1, _2, etc. to the new name; 'skip': skip the rename, leaving the column under its original name; 'overwrite': replace the existing column; 'error': raise ValueError.",
-              "ecoscope:advanced": true
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Rename Driver Column"
-        },
         "driver_ranking_table": {
           "additionalProperties": false,
           "properties": {
@@ -598,27 +395,6 @@
       "description": "Full trip log for the selected vehicle.",
       "ecoscope:task_group": true,
       "properties": {
-        "vehicle_usage_columns": {
-          "additionalProperties": false,
-          "properties": {
-            "duplicate_strategy": {
-              "default": "suffix",
-              "enum": [
-                "suffix",
-                "skip",
-                "overwrite",
-                "error"
-              ],
-              "title": "Duplicate Strategy",
-              "type": "string",
-              "description": "Strategy for handling a rename whose new name is already taken. 'suffix': append _1, _2, etc. to the new name; 'skip': skip the rename, leaving the column under its original name; 'overwrite': replace the existing column; 'error': raise ValueError.",
-              "ecoscope:advanced": true
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Select Columns for Vehicle Usage Table"
-        },
         "vehicle_usage_table": {
           "additionalProperties": false,
           "properties": {
@@ -666,27 +442,6 @@
       "description": "Fuel refill events for the selected vehicle.",
       "ecoscope:task_group": true,
       "properties": {
-        "refuel_columns": {
-          "additionalProperties": false,
-          "properties": {
-            "duplicate_strategy": {
-              "default": "suffix",
-              "enum": [
-                "suffix",
-                "skip",
-                "overwrite",
-                "error"
-              ],
-              "title": "Duplicate Strategy",
-              "type": "string",
-              "description": "Strategy for handling a rename whose new name is already taken. 'suffix': append _1, _2, etc. to the new name; 'skip': skip the rename, leaving the column under its original name; 'overwrite': replace the existing column; 'error': raise ValueError.",
-              "ecoscope:advanced": true
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Select Columns for Fuel Refill Table"
-        },
         "refuel_table": {
           "additionalProperties": false,
           "properties": {
@@ -819,26 +574,7 @@
         "force_point_geometry"
       ]
     },
-    "Extract Vehicle Fields": {
-      "ui:order": [
-        "extract_km_salida",
-        "extract_km_llegada",
-        "extract_litros",
-        "extract_tipo_combustible",
-        "extract_objetivo",
-        "extract_origen",
-        "extract_destino",
-        "extract_hora_llegada",
-        "extract_chofer",
-        "extract_forma_recarga",
-        "extract_responsable_recarga"
-      ]
-    },
     "Driver Ranking Table": {
-      "ui:order": [
-        "driver_ranking_columns",
-        "driver_ranking_table"
-      ],
       "driver_ranking_table": {
         "ui:order": [
           "columns",
@@ -847,10 +583,6 @@
       }
     },
     "Vehicle Usage Table": {
-      "ui:order": [
-        "vehicle_usage_columns",
-        "vehicle_usage_table"
-      ],
       "vehicle_usage_table": {
         "ui:order": [
           "columns",
@@ -859,10 +591,6 @@
       }
     },
     "Fuel Refill Table": {
-      "ui:order": [
-        "refuel_columns",
-        "refuel_table"
-      ],
       "refuel_table": {
         "ui:order": [
           "columns",
@@ -877,8 +605,6 @@
       "time_range",
       "patente",
       "events",
-      "Process and Filter Vehicle",
-      "Extract Vehicle Fields",
       "KM Over Time Chart",
       "Driver Ranking Table",
       "Vehicle Usage Table",

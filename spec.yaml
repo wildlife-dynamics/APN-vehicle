@@ -14,8 +14,8 @@ requirements:
     channel: conda-forge
 
   - name: ecoscope-workflows-ext-apn
-    version: "0.0.30"
-    channel: https://repo.prefix.dev/ecoscope-workflows-custom/
+    version: "*"
+    channel: file:///tmp/ecoscope-workflows-custom/release/artifacts/
 
 rjsf-overrides:
   properties:
@@ -47,6 +47,11 @@ workflow:
   - name: Data Source
     id: er_client
     task: set_er_connection
+
+  - id: user_details
+    task: get_user_me
+    partial:
+      client: ${{ workflow.er_client.return }}
 
   - name: Define Base Maps
     id: base_maps
@@ -597,6 +602,50 @@ workflow:
         partial:
           title: "Recargas de combustible"
           data: ${{ workflow.refuel_table_html.return }}
+
+  - name: Get Report Template Path
+    id: get_template_path
+    task: set_string_var
+
+  - id: norm_template_path
+    task: remove_file_scheme
+    partial:
+      path: ${{ workflow.get_template_path.return }}
+
+  - id: norm_output_dir
+    task: remove_file_scheme
+    partial:
+      path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+
+  - name: Convert KM Over Time Chart to PNG
+    id: km_over_time_chart_to_png
+    task: html_to_png
+    partial:
+      html_path: ${{ workflow.km_over_time_chart_html.return }}
+      output_dir: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+      config:
+        full_page: false
+
+  - title: Vehicle Report
+    type: task-group
+    description: "Generates a DOCX report of this vehicle's activity using only the tables and stats already computed above."
+    tasks:
+      - id: generate_word_doc
+        task: generate_vehicle_report
+        partial:
+          patente: ${{ workflow.patente.return }}
+          time_range: ${{ workflow.time_range.return }}
+          total_journeys: ${{ workflow.total_journeys.return }}
+          total_km: ${{ workflow.total_km.return }}
+          total_fuel: ${{ workflow.total_fuel_q.return }}
+          avg_occupants: ${{ workflow.avg_occupants.return }}
+          vehicle_usage_table: ${{ workflow.vehicle_usage_columns.return }}
+          driver_ranking_table: ${{ workflow.driver_ranking_columns.return }}
+          refuel_table: ${{ workflow.refuel_columns.return }}
+          user_details: ${{ workflow.user_details.return }}
+          template_path: ${{ workflow.norm_template_path.return }}
+          output_dir: ${{ workflow.norm_output_dir.return }}
+          km_chart: ${{ workflow.km_over_time_chart_to_png.return }}
 
   - name: Create Dashboard
     id: dashboard

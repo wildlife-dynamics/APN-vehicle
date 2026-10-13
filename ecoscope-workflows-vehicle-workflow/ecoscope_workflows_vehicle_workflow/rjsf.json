@@ -483,6 +483,20 @@
           "title": ""
         }
       }
+    },
+    "get_template_path": {
+      "additionalProperties": false,
+      "properties": {
+        "var": {
+          "title": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "var"
+      ],
+      "type": "object",
+      "title": "Get Report Template Path"
     }
   },
   "$defs": {
@@ -608,7 +622,8 @@
       "KM Over Time Chart",
       "Driver Ranking Table",
       "Vehicle Usage Table",
-      "Fuel Refill Table"
+      "Fuel Refill Table",
+      "get_template_path"
     ]
   },
   "additionalProperties": false

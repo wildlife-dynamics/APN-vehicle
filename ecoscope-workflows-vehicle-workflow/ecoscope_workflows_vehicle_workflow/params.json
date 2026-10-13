@@ -422,6 +422,20 @@
       "required": [],
       "type": "object",
       "title": "Draw Fuel Refill Table"
+    },
+    "get_template_path": {
+      "additionalProperties": false,
+      "properties": {
+        "var": {
+          "title": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "var"
+      ],
+      "type": "object",
+      "title": "Get Report Template Path"
     }
   },
   "$defs": {
@@ -541,7 +555,8 @@
       "km_over_time_chart",
       "driver_ranking_table",
       "vehicle_usage_table",
-      "refuel_table"
+      "refuel_table",
+      "get_template_path"
     ]
   },
   "additionalProperties": false

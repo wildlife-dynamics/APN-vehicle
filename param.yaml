@@ -14,3 +14,6 @@ time_range:
     utc: +03:00
   since: "2025-01-01T00:00:00.000Z"
   until: "2026-04-01T23:59:00.000Z"
+
+get_template_path:
+  var: "/Users/zak/Documents/w-dynamics/APN-vehicle/resources/templates/vehicle_report_template.docx"

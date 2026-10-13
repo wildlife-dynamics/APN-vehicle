@@ -50,7 +50,15 @@ from ecoscope_workflows_ext_apn.tasks import (
 from ecoscope_workflows_ext_apn.tasks import (
     gather_apn_dashboard as gather_apn_dashboard,
 )
+from ecoscope_workflows_ext_apn.tasks import (
+    generate_vehicle_report as generate_vehicle_report,
+)
+from ecoscope_workflows_ext_apn.tasks import get_user_me as get_user_me
 from ecoscope_workflows_ext_apn.tasks import join_list_column as join_list_column
+from ecoscope_workflows_ext_custom.tasks.io import html_to_png as html_to_png
+from ecoscope_workflows_ext_custom.tasks.io import (
+    remove_file_scheme as remove_file_scheme,
+)
 from ecoscope_workflows_ext_custom.tasks.localization import set_locale as set_locale
 from ecoscope_workflows_ext_custom.tasks.transformation import (
     to_quantity as to_quantity,
@@ -96,6 +104,23 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             unpack_depth=1,
         )
         .partial(**(params.get("er_client") or {}))
+        .call()
+    )
+
+    user_details = (
+        task(get_user_me)
+        .validate()
+        .set_task_instance_id("user_details")
+        .handle_errors()
+        .with_tracing()
+        .skipif(
+            conditions=[
+                any_is_empty_df,
+                any_dependency_skipped,
+            ],
+            unpack_depth=1,
+        )
+        .partial(client=er_client, **(params.get("user_details") or {}))
         .call()
     )
 
@@ -1225,6 +1250,114 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             title="Recargas de combustible",
             data=refuel_table_html,
             **(params.get("refuel_sv") or {}),
+        )
+        .call()
+    )
+
+    get_template_path = (
+        task(set_string_var)
+        .validate()
+        .set_task_instance_id("get_template_path")
+        .handle_errors()
+        .with_tracing()
+        .skipif(
+            conditions=[
+                any_is_empty_df,
+                any_dependency_skipped,
+            ],
+            unpack_depth=1,
+        )
+        .partial(**(params.get("get_template_path") or {}))
+        .call()
+    )
+
+    norm_template_path = (
+        task(remove_file_scheme)
+        .validate()
+        .set_task_instance_id("norm_template_path")
+        .handle_errors()
+        .with_tracing()
+        .skipif(
+            conditions=[
+                any_is_empty_df,
+                any_dependency_skipped,
+            ],
+            unpack_depth=1,
+        )
+        .partial(path=get_template_path, **(params.get("norm_template_path") or {}))
+        .call()
+    )
+
+    norm_output_dir = (
+        task(remove_file_scheme)
+        .validate()
+        .set_task_instance_id("norm_output_dir")
+        .handle_errors()
+        .with_tracing()
+        .skipif(
+            conditions=[
+                any_is_empty_df,
+                any_dependency_skipped,
+            ],
+            unpack_depth=1,
+        )
+        .partial(
+            path=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+            **(params.get("norm_output_dir") or {}),
+        )
+        .call()
+    )
+
+    km_over_time_chart_to_png = (
+        task(html_to_png)
+        .validate()
+        .set_task_instance_id("km_over_time_chart_to_png")
+        .handle_errors()
+        .with_tracing()
+        .skipif(
+            conditions=[
+                any_is_empty_df,
+                any_dependency_skipped,
+            ],
+            unpack_depth=1,
+        )
+        .partial(
+            html_path=km_over_time_chart_html,
+            output_dir=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+            config={"full_page": False},
+            **(params.get("km_over_time_chart_to_png") or {}),
+        )
+        .call()
+    )
+
+    generate_word_doc = (
+        task(generate_vehicle_report)
+        .validate()
+        .set_task_instance_id("generate_word_doc")
+        .handle_errors()
+        .with_tracing()
+        .skipif(
+            conditions=[
+                any_is_empty_df,
+                any_dependency_skipped,
+            ],
+            unpack_depth=1,
+        )
+        .partial(
+            patente=patente,
+            time_range=time_range,
+            total_journeys=total_journeys,
+            total_km=total_km,
+            total_fuel=total_fuel_q,
+            avg_occupants=avg_occupants,
+            vehicle_usage_table=vehicle_usage_columns,
+            driver_ranking_table=driver_ranking_columns,
+            refuel_table=refuel_columns,
+            user_details=user_details,
+            template_path=norm_template_path,
+            output_dir=norm_output_dir,
+            km_chart=km_over_time_chart_to_png,
+            **(params.get("generate_word_doc") or {}),
         )
         .call()
     )

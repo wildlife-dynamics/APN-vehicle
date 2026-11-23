@@ -257,7 +257,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
                 "geometry",
                 "event_details",
             ],
-            event_types=["libro_diario_vehicular_v2"],
+            event_types=["libro_diario_vehicular"],
             include_details=True,
             raise_on_empty=False,
             include_updates=False,
@@ -308,7 +308,11 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .partial(
             df=processed_events,
             column_name="event_details",
-            field_name_options=["Patente"],
+            field_name_options=[
+                "vehiculo_no_listado_patente",
+                "vehiculo_patente",
+                "Patente",
+            ],
             output_column_name="patente",
             output_type="str",
             fan_out=True,
@@ -407,7 +411,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .partial(
             df=extract_km_llegada,
             column_name="event_details",
-            field_name_options=["Litros_cargados"],
+            field_name_options=["cantidad_de_litros_cargados", "Litros_cargados"],
             output_column_name="litros_cargados",
             output_type="float",
             fan_out=True,
@@ -432,7 +436,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .partial(
             df=extract_litros,
             column_name="event_details",
-            field_name_options=["Tipo_de_combustible"],
+            field_name_options=["tipo_de_combustible_cargado", "Tipo_de_combustible"],
             output_column_name="tipo_combustible",
             output_type="str",
             fan_out=True,
@@ -457,7 +461,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .partial(
             df=extract_tipo_combustible,
             column_name="event_details",
-            field_name="Pasajeros",
+            field_name="ocupantes_del_vehiculo",
             output_column_name="ocupantes",
             **(params.get("extract_ocupantes") or {}),
         )
@@ -480,7 +484,10 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .partial(
             df=extract_ocupantes,
             column_name="event_details",
-            field_name_options=["Motivo_del_desplazamiento"],
+            field_name_options=[
+                "motivo_del_desplazamiento",
+                "Motivo_del_desplazamiento",
+            ],
             output_column_name="objetivo",
             output_type="str",
             fan_out=True,
@@ -527,7 +534,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .partial(
             df=format_objetivo,
             column_name="event_details",
-            field_name_options=["Origen_del_desplazamiento"],
+            field_name_options=["origen", "Origen_del_desplazamiento"],
             output_column_name="origen",
             output_type="str",
             fan_out=True,
@@ -552,7 +559,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .partial(
             df=extract_origen,
             column_name="event_details",
-            field_name_options=["Destino"],
+            field_name_options=["destino", "Destino"],
             output_column_name="destino",
             output_type="str",
             fan_out=True,
@@ -577,7 +584,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .partial(
             df=extract_destino,
             column_name="event_details",
-            field_name_options=["Regreso"],
+            field_name_options=["fecha_y_hora_del_regreso", "Regreso"],
             output_column_name="regreso",
             output_type="str",
             fan_out=True,

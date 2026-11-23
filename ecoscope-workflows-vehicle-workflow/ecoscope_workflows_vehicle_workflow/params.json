@@ -25,8 +25,8 @@
       "properties": {
         "data_source": {
           "$ref": "#/$defs/EarthRangerConnection",
-          "title": "",
-          "description": "Select one of your configured data sources."
+          "description": "Select one of your configured data sources.",
+          "title": ""
         }
       },
       "required": [
@@ -53,8 +53,9 @@
               "min_zoom": 0
             }
           ],
+          "description": "Select tile layers to use as base layers in map outputs. The first layer in the list will be the bottommost layer displayed.",
+          "ecoscope:advanced": true,
           "items": {
-            "title": "Base Layer",
             "anyOf": [
               {
                 "description": "A tiled raster layer loaded on-demand from a URL template (e.g., base maps).",
@@ -72,8 +73,8 @@
                     "default": 1,
                     "description": "Set layer transparency from 1 (fully visible) to 0 (hidden).",
                     "ecoscope:advanced": true,
-                    "maximum": 1.0,
-                    "minimum": 0.0,
+                    "maximum": 1,
+                    "minimum": 0,
                     "title": "Layer Opacity",
                     "type": "number"
                   }
@@ -97,8 +98,8 @@
                     "default": 1,
                     "description": "Set layer transparency from 1 (fully visible) to 0 (hidden).",
                     "ecoscope:advanced": true,
-                    "maximum": 1.0,
-                    "minimum": 0.0,
+                    "maximum": 1,
+                    "minimum": 0,
                     "title": "Layer Opacity",
                     "type": "number"
                   }
@@ -122,8 +123,8 @@
                     "default": 1,
                     "description": "Set layer transparency from 1 (fully visible) to 0 (hidden).",
                     "ecoscope:advanced": true,
-                    "maximum": 1.0,
-                    "minimum": 0.0,
+                    "maximum": 1,
+                    "minimum": 0,
                     "title": "Layer Opacity",
                     "type": "number"
                   }
@@ -147,8 +148,8 @@
                     "default": 1,
                     "description": "Set layer transparency from 1 (fully visible) to 0 (hidden).",
                     "ecoscope:advanced": true,
-                    "maximum": 1.0,
-                    "minimum": 0.0,
+                    "maximum": 1,
+                    "minimum": 0,
                     "title": "Layer Opacity",
                     "type": "number"
                   }
@@ -172,8 +173,8 @@
                     "default": 1,
                     "description": "Set layer transparency from 1 (fully visible) to 0 (hidden).",
                     "ecoscope:advanced": true,
-                    "maximum": 1.0,
-                    "minimum": 0.0,
+                    "maximum": 1,
+                    "minimum": 0,
                     "title": "Layer Opacity",
                     "type": "number"
                   }
@@ -195,8 +196,8 @@
                     "default": 1,
                     "description": "Set layer transparency from 1 (fully visible) to 0 (hidden).",
                     "ecoscope:advanced": true,
-                    "maximum": 1.0,
-                    "minimum": 0.0,
+                    "maximum": 1,
+                    "minimum": 0,
                     "title": "Custom Layer Opacity",
                     "type": "number"
                   },
@@ -216,12 +217,11 @@
                 "title": "Custom Layer (Advanced)",
                 "type": "object"
               }
-            ]
+            ],
+            "title": "Base Layer"
           },
           "title": " ",
-          "type": "array",
-          "description": "Select tile layers to use as base layers in map outputs. The first layer in the list will be the bottommost layer displayed.",
-          "ecoscope:advanced": true
+          "type": "array"
         }
       },
       "type": "object",
@@ -232,23 +232,19 @@
       "additionalProperties": false,
       "properties": {
         "since": {
+          "description": "The start time",
           "format": "date-time",
           "title": "Since",
-          "type": "string",
-          "description": "The start time"
+          "type": "string"
         },
         "until": {
+          "description": "The end time",
           "format": "date-time",
           "title": "Until",
-          "type": "string",
-          "description": "The end time"
+          "type": "string"
         },
         "timezone": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/TimezoneInfo"
-            }
-          ],
+          "$ref": "#/$defs/TimezoneInfo",
           "default": null,
           "title": "Timezone"
         }
@@ -280,6 +276,8 @@
       "properties": {
         "event_states": {
           "default": null,
+          "description": "Choose to analyze events with a certain state. If left empty, events of all states will be analyzed",
+          "ecoscope:advanced": true,
           "items": {
             "type": "string",
             "oneOf": [
@@ -303,16 +301,14 @@
           },
           "title": "Event State",
           "type": "array",
-          "description": "Choose to analyze events with a certain state. If left empty, events of all states will be analyzed",
-          "uniqueItems": true,
-          "ecoscope:advanced": true
+          "uniqueItems": true
         },
         "force_point_geometry": {
           "default": true,
-          "title": "Force Point Geometry",
-          "type": "boolean",
           "description": "If True, polygon/multipolygon event geometries are reduced to their centroid. Set False to preserve native geometry types.",
-          "ecoscope:advanced": true
+          "ecoscope:advanced": true,
+          "title": "Force Point Geometry",
+          "type": "boolean"
         }
       },
       "required": [],
@@ -324,12 +320,12 @@
       "properties": {
         "color_palette": {
           "default": null,
+          "description": "Ordered hex color list. Cycles if more categories than colors.",
           "items": {
             "type": "string"
           },
           "title": "Color Palette",
-          "type": "array",
-          "description": "Ordered hex color list. Cycles if more categories than colors."
+          "type": "array"
         }
       },
       "required": [],
@@ -341,24 +337,20 @@
       "properties": {
         "columns": {
           "default": null,
+          "description": "The list of dataframe columns to render in the table. Leave empty to render all columns",
+          "ecoscope:advanced": true,
           "items": {
             "type": "string"
           },
           "title": "Columns",
-          "type": "array",
-          "description": "The list of dataframe columns to render in the table. Leave empty to render all columns",
-          "ecoscope:advanced": true
+          "type": "array"
         },
         "table_config": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/TableConfig"
-            }
-          ],
+          "$ref": "#/$defs/TableConfig",
           "default": null,
-          "title": "Table Config",
           "description": "Configuration options for the table.",
-          "ecoscope:advanced": true
+          "ecoscope:advanced": true,
+          "title": "Table Config"
         }
       },
       "required": [],
@@ -370,24 +362,20 @@
       "properties": {
         "columns": {
           "default": null,
+          "description": "The list of dataframe columns to render in the table. Leave empty to render all columns",
+          "ecoscope:advanced": true,
           "items": {
             "type": "string"
           },
           "title": "Columns",
-          "type": "array",
-          "description": "The list of dataframe columns to render in the table. Leave empty to render all columns",
-          "ecoscope:advanced": true
+          "type": "array"
         },
         "table_config": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/TableConfig"
-            }
-          ],
+          "$ref": "#/$defs/TableConfig",
           "default": null,
-          "title": "Table Config",
           "description": "Configuration options for the table.",
-          "ecoscope:advanced": true
+          "ecoscope:advanced": true,
+          "title": "Table Config"
         }
       },
       "required": [],
@@ -399,24 +387,20 @@
       "properties": {
         "columns": {
           "default": null,
+          "description": "The list of dataframe columns to render in the table. Leave empty to render all columns",
+          "ecoscope:advanced": true,
           "items": {
             "type": "string"
           },
           "title": "Columns",
-          "type": "array",
-          "description": "The list of dataframe columns to render in the table. Leave empty to render all columns",
-          "ecoscope:advanced": true
+          "type": "array"
         },
         "table_config": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/TableConfig"
-            }
-          ],
+          "$ref": "#/$defs/TableConfig",
           "default": null,
-          "title": "Table Config",
           "description": "Configuration options for the table.",
-          "ecoscope:advanced": true
+          "ecoscope:advanced": true,
+          "title": "Table Config"
         }
       },
       "required": [],
@@ -436,6 +420,19 @@
       ],
       "type": "object",
       "title": "Get Report Template Path"
+    },
+    "generate_word_doc": {
+      "additionalProperties": false,
+      "properties": {
+        "km_over_time_chart_html": {
+          "title": "Km Over Time Chart Html"
+        }
+      },
+      "required": [
+        "km_over_time_chart_html"
+      ],
+      "type": "object",
+      "title": ""
     }
   },
   "$defs": {
@@ -556,7 +553,8 @@
       "driver_ranking_table",
       "vehicle_usage_table",
       "refuel_table",
-      "get_template_path"
+      "get_template_path",
+      "generate_word_doc"
     ]
   },
   "additionalProperties": false

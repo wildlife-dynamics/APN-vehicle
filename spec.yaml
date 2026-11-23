@@ -625,21 +625,15 @@ workflow:
     partial:
       path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
 
-  - name: Convert KM Over Time Chart to PNG
-    id: km_over_time_chart_to_png
-    task: html_to_png
-    partial:
-      html_path: ${{ workflow.km_over_time_chart_html.return }}
-      output_dir: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
-      config:
-        full_page: false
-
   - title: Vehicle Report
     type: task-group
     description: "Generates a DOCX report of this vehicle's activity using only the tables and stats already computed above."
     tasks:
       - id: generate_word_doc
         task: generate_vehicle_report
+        skipif:
+          conditions:
+            - never  # one empty widget shouldn't skip the whole report
         partial:
           patente: ${{ workflow.patente.return }}
           time_range: ${{ workflow.time_range.return }}
@@ -653,7 +647,7 @@ workflow:
           user_details: ${{ workflow.user_details.return }}
           template_path: ${{ workflow.norm_template_path.return }}
           output_dir: ${{ workflow.norm_output_dir.return }}
-          km_chart: ${{ workflow.km_over_time_chart_to_png.return }}
+          km_over_time_chart_html: ${{ workflow.km_over_time_chart_html.return }}  # the task screenshots it
 
   - name: Create Dashboard
     id: dashboard

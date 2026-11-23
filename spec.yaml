@@ -100,7 +100,7 @@ workflow:
         - geometry
         - event_details
       event_types:
-        - libro_diario_vehicular_v2
+        - libro_diario_vehicular  # Libro diario vehicular (daily vehicle log); v2 was removed
       include_details: true
       raise_on_empty: false
       include_updates: false
@@ -128,6 +128,8 @@ workflow:
           df: ${{ workflow.processed_events.return }}
           column_name: event_details
           field_name_options:
+            - vehiculo_patente
+            - vehiculo_no_listado_patente
             - Patente
           output_column_name: patente
           output_type: str
@@ -178,6 +180,7 @@ workflow:
           df: ${{ workflow.extract_km_llegada.return }}
           column_name: event_details
           field_name_options:
+            - cantidad_de_litros_cargados
             - Litros_cargados
           output_column_name: litros_cargados
           output_type: float
@@ -190,6 +193,7 @@ workflow:
           df: ${{ workflow.extract_litros.return }}
           column_name: event_details
           field_name_options:
+            - tipo_de_combustible_cargado
             - Tipo_de_combustible
           output_column_name: tipo_combustible
           output_type: str
@@ -201,7 +205,7 @@ workflow:
         partial:
           df: ${{ workflow.extract_tipo_combustible.return }}
           column_name: event_details
-          field_name: Pasajeros
+          field_name: ocupantes_del_vehiculo
           output_column_name: ocupantes
 
       - name: Extract Trip Purpose
@@ -211,6 +215,7 @@ workflow:
           df: ${{ workflow.extract_ocupantes.return }}
           column_name: event_details
           field_name_options:
+            - motivo_del_desplazamiento
             - Motivo_del_desplazamiento
           output_column_name: objetivo
           output_type: str
@@ -231,6 +236,7 @@ workflow:
           df: ${{ workflow.format_objetivo.return }}
           column_name: event_details
           field_name_options:
+            - origen
             - Origen_del_desplazamiento
           output_column_name: origen
           output_type: str
@@ -243,6 +249,7 @@ workflow:
           df: ${{ workflow.extract_origen.return }}
           column_name: event_details
           field_name_options:
+            - destino
             - Destino
           output_column_name: destino
           output_type: str
@@ -255,6 +262,7 @@ workflow:
           df: ${{ workflow.extract_destino.return }}
           column_name: event_details
           field_name_options:
+            - fecha_y_hora_del_regreso
             - Regreso
           output_column_name: regreso
           output_type: str

@@ -481,26 +481,6 @@
       ],
       "type": "object",
       "title": "Get Report Template Path"
-    },
-    "Vehicle Report": {
-      "type": "object",
-      "description": "Generates a DOCX report of this vehicle's activity using only the tables and stats already computed above.",
-      "ecoscope:task_group": true,
-      "properties": {
-        "generate_word_doc": {
-          "additionalProperties": false,
-          "properties": {
-            "km_over_time_chart_html": {
-              "title": "Km Over Time Chart Html"
-            }
-          },
-          "required": [
-            "km_over_time_chart_html"
-          ],
-          "type": "object",
-          "title": ""
-        }
-      }
     }
   },
   "$defs": {
@@ -627,8 +607,7 @@
       "Driver Ranking Table",
       "Vehicle Usage Table",
       "Fuel Refill Table",
-      "get_template_path",
-      "Vehicle Report"
+      "get_template_path"
     ]
   },
   "additionalProperties": false

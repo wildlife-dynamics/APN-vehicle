@@ -305,7 +305,7 @@ workflow:
           fan_out: true
 
       - name: Calculate KM Travelled per Journey
-        id: km_por_viaje
+        id: km_por_viaje_raw
         task: apply_arithmetic_operation_over_rows
         partial:
           df: ${{ workflow.extract_responsable_recarga.return }}
@@ -313,6 +313,14 @@ workflow:
           column_b: km_salida
           output_column: km_viaje
           operation: subtract
+
+      # A return odometer lower than the departure one is a typo; don't let it skew the totals
+      - name: Ignore Impossible Trip Distances
+        id: km_por_viaje
+        task: blank_negative_values
+        partial:
+          df: ${{ workflow.km_por_viaje_raw.return }}
+          column: km_viaje
 
   - title: Vehicle Statistics Cards
     type: task-group

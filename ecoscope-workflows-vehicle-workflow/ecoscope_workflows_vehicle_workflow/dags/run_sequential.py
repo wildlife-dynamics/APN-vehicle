@@ -55,7 +55,6 @@ from ecoscope_workflows_ext_apn.tasks import (
 )
 from ecoscope_workflows_ext_apn.tasks import get_user_me as get_user_me
 from ecoscope_workflows_ext_apn.tasks import join_list_column as join_list_column
-from ecoscope_workflows_ext_custom.tasks.io import html_to_png as html_to_png
 from ecoscope_workflows_ext_custom.tasks.io import (
     remove_file_scheme as remove_file_scheme,
 )
@@ -1315,28 +1314,6 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .call()
     )
 
-    km_over_time_chart_to_png = (
-        task(html_to_png)
-        .validate()
-        .set_task_instance_id("km_over_time_chart_to_png")
-        .handle_errors()
-        .with_tracing()
-        .skipif(
-            conditions=[
-                any_is_empty_df,
-                any_dependency_skipped,
-            ],
-            unpack_depth=1,
-        )
-        .partial(
-            html_path=km_over_time_chart_html,
-            output_dir=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
-            config={"full_page": False},
-            **(params.get("km_over_time_chart_to_png") or {}),
-        )
-        .call()
-    )
-
     generate_word_doc = (
         task(generate_vehicle_report)
         .validate()
@@ -1345,8 +1322,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .with_tracing()
         .skipif(
             conditions=[
-                any_is_empty_df,
-                any_dependency_skipped,
+                never,
             ],
             unpack_depth=1,
         )
@@ -1363,7 +1339,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             user_details=user_details,
             template_path=norm_template_path,
             output_dir=norm_output_dir,
-            km_chart=km_over_time_chart_to_png,
+            km_over_time_chart_html=km_over_time_chart_html,
             **(params.get("generate_word_doc") or {}),
         )
         .call()

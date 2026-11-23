@@ -420,19 +420,6 @@
       ],
       "type": "object",
       "title": "Get Report Template Path"
-    },
-    "generate_word_doc": {
-      "additionalProperties": false,
-      "properties": {
-        "km_over_time_chart_html": {
-          "title": "Km Over Time Chart Html"
-        }
-      },
-      "required": [
-        "km_over_time_chart_html"
-      ],
-      "type": "object",
-      "title": ""
     }
   },
   "$defs": {
@@ -553,8 +540,7 @@
       "driver_ranking_table",
       "vehicle_usage_table",
       "refuel_table",
-      "get_template_path",
-      "generate_word_doc"
+      "get_template_path"
     ]
   },
   "additionalProperties": false

@@ -128,8 +128,8 @@ workflow:
           df: ${{ workflow.processed_events.return }}
           column_name: event_details
           field_name_options:
+            - vehiculo_no_listado_patente  # typed plate, only set for an unlisted vehicle
             - vehiculo_patente
-            - vehiculo_no_listado_patente
             - Patente
           output_column_name: patente
           output_type: str

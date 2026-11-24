@@ -25,18 +25,6 @@ rjsf-overrides:
     get_template_path.properties.var.default: "https://raw.githubusercontent.com/wildlife-dynamics/APN-vehicle/main/resources/templates/vehicle_report_template.docx"
     get_template_path.properties.var.ecoscope:advanced: true
     patente.properties.var.title: "Patente"
-    Driver Ranking Table.properties.driver_ranking_table.title: ""
-    Driver Ranking Table.properties.driver_ranking_table.properties.table_config.properties.enable_sorting.default: true
-    Driver Ranking Table.properties.driver_ranking_table.properties.table_config.properties.enable_filtering.default: true
-    Driver Ranking Table.properties.driver_ranking_table.properties.table_config.properties.enable_download.default: true
-    Vehicle Usage Table.properties.vehicle_usage_table.title: ""
-    Vehicle Usage Table.properties.vehicle_usage_table.properties.table_config.properties.enable_sorting.default: true
-    Vehicle Usage Table.properties.vehicle_usage_table.properties.table_config.properties.enable_filtering.default: true
-    Vehicle Usage Table.properties.vehicle_usage_table.properties.table_config.properties.enable_download.default: true
-    Fuel Refill Table.properties.refuel_table.title: ""
-    Fuel Refill Table.properties.refuel_table.properties.table_config.properties.enable_sorting.default: true
-    Fuel Refill Table.properties.refuel_table.properties.table_config.properties.enable_filtering.default: true
-    Fuel Refill Table.properties.refuel_table.properties.table_config.properties.enable_download.default: true
 
 task-instance-defaults:
   skipif:
@@ -422,6 +410,7 @@ workflow:
           category: patente
           agg_function: sum
           time_interval: month
+          color_palette: null
           layout_style:
             title: "Kilómetros recorridos en el tiempo"
             title_x: 0.5
@@ -488,6 +477,7 @@ workflow:
           df: ${{ workflow.driver_ranking_data.return }}
           column_name: "Kilómetros recorridos"
           ascending: false
+          na_position: last
 
       - name: Rename Driver Column
         id: driver_ranking_columns
@@ -509,6 +499,12 @@ workflow:
         task: draw_table
         partial:
           dataframe: ${{ workflow.driver_ranking_columns.return }}
+          columns: null
+          table_config:
+            enable_sorting: true
+            enable_filtering: true
+            enable_download: true
+            hide_header: false
 
       - name: Persist Driver Ranking Table
         id: driver_ranking_table_html
@@ -574,6 +570,12 @@ workflow:
         task: draw_table
         partial:
           dataframe: ${{ workflow.vehicle_usage_columns.return }}
+          columns: null
+          table_config:
+            enable_sorting: true
+            enable_filtering: true
+            enable_download: true
+            hide_header: false
 
       - name: Persist Vehicle Usage Table
         id: vehicle_usage_table_html
@@ -639,6 +641,12 @@ workflow:
         task: draw_table
         partial:
           dataframe: ${{ workflow.refuel_columns.return }}
+          columns: null
+          table_config:
+            enable_sorting: true
+            enable_filtering: true
+            enable_download: true
+            hide_header: false
 
       - name: Persist Fuel Refill Table
         id: refuel_table_html

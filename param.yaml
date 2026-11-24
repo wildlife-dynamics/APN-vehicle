@@ -16,4 +16,4 @@ time_range:
   until: "2026-04-01T23:59:00.000Z"
 
 get_template_path:
-  var: "/Users/zak/Documents/w-dynamics/APN-vehicle/resources/templates/vehicle_report_template.docx"
+  var: https://raw.githubusercontent.com/wildlife-dynamics/APN-vehicle/main/resources/templates/vehicle_report_template.docx

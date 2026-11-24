@@ -14,11 +14,16 @@ requirements:
     channel: conda-forge
 
   - name: ecoscope-workflows-ext-apn
-    version: "0.0.33"
+    version: "0.0.34"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 
 rjsf-overrides:
   properties:
+    get_template_path.title: Report Template
+    get_template_path.properties.var.title: Template Path
+    get_template_path.properties.var.description: Path or URL to the .docx template used for the report.
+    get_template_path.properties.var.default: "https://raw.githubusercontent.com/wildlife-dynamics/APN-vehicle/main/resources/templates/vehicle_report_template.docx"
+    get_template_path.properties.var.ecoscope:advanced: true
     patente.properties.var.title: "Patente"
     Driver Ranking Table.properties.driver_ranking_table.title: ""
     Driver Ranking Table.properties.driver_ranking_table.properties.table_config.properties.enable_sorting.default: true

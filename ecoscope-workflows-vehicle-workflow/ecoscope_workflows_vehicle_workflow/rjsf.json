@@ -315,178 +315,6 @@
       "type": "object",
       "title": "Libro Diario Vehicular Events"
     },
-    "KM Over Time Chart": {
-      "type": "object",
-      "description": "Monthly bar chart of kilometres travelled for the selected vehicle.",
-      "ecoscope:task_group": true,
-      "properties": {
-        "km_over_time_chart": {
-          "additionalProperties": false,
-          "properties": {
-            "color_palette": {
-              "default": null,
-              "description": "Ordered hex color list. Cycles if more categories than colors.",
-              "items": {
-                "type": "string"
-              },
-              "title": "Color Palette",
-              "type": "array"
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": ""
-        }
-      }
-    },
-    "Driver Ranking Table": {
-      "type": "object",
-      "description": "Drivers ranked by total km and journey count.",
-      "ecoscope:task_group": true,
-      "properties": {
-        "driver_ranking_sorted": {
-          "additionalProperties": false,
-          "properties": {
-            "na_position": {
-              "default": "last",
-              "description": "Where to place NaN values in the sort",
-              "ecoscope:advanced": true,
-              "enum": [
-                "first",
-                "last"
-              ],
-              "title": "Na Position",
-              "type": "string"
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "Rank Drivers by KM"
-        },
-        "driver_ranking_table": {
-          "additionalProperties": false,
-          "properties": {
-            "columns": {
-              "default": null,
-              "description": "The list of dataframe columns to render in the table. Leave empty to render all columns",
-              "ecoscope:advanced": true,
-              "items": {
-                "type": "string"
-              },
-              "title": "Columns",
-              "type": "array"
-            },
-            "table_config": {
-              "$ref": "#/$defs/TableConfig",
-              "default": null,
-              "description": "Configuration options for the table.",
-              "ecoscope:advanced": true,
-              "title": "Table Config",
-              "properties": {
-                "enable_sorting": {
-                  "default": true
-                },
-                "enable_filtering": {
-                  "default": true
-                },
-                "enable_download": {
-                  "default": true
-                }
-              }
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": ""
-        }
-      }
-    },
-    "Vehicle Usage Table": {
-      "type": "object",
-      "description": "Full trip log for the selected vehicle.",
-      "ecoscope:task_group": true,
-      "properties": {
-        "vehicle_usage_table": {
-          "additionalProperties": false,
-          "properties": {
-            "columns": {
-              "default": null,
-              "description": "The list of dataframe columns to render in the table. Leave empty to render all columns",
-              "ecoscope:advanced": true,
-              "items": {
-                "type": "string"
-              },
-              "title": "Columns",
-              "type": "array"
-            },
-            "table_config": {
-              "$ref": "#/$defs/TableConfig",
-              "default": null,
-              "description": "Configuration options for the table.",
-              "ecoscope:advanced": true,
-              "title": "Table Config",
-              "properties": {
-                "enable_sorting": {
-                  "default": true
-                },
-                "enable_filtering": {
-                  "default": true
-                },
-                "enable_download": {
-                  "default": true
-                }
-              }
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": ""
-        }
-      }
-    },
-    "Fuel Refill Table": {
-      "type": "object",
-      "description": "Fuel refill events for the selected vehicle.",
-      "ecoscope:task_group": true,
-      "properties": {
-        "refuel_table": {
-          "additionalProperties": false,
-          "properties": {
-            "columns": {
-              "default": null,
-              "description": "The list of dataframe columns to render in the table. Leave empty to render all columns",
-              "ecoscope:advanced": true,
-              "items": {
-                "type": "string"
-              },
-              "title": "Columns",
-              "type": "array"
-            },
-            "table_config": {
-              "$ref": "#/$defs/TableConfig",
-              "default": null,
-              "description": "Configuration options for the table.",
-              "ecoscope:advanced": true,
-              "title": "Table Config",
-              "properties": {
-                "enable_sorting": {
-                  "default": true
-                },
-                "enable_filtering": {
-                  "default": true
-                },
-                "enable_download": {
-                  "default": true
-                }
-              }
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": ""
-        }
-      }
-    },
     "get_template_path": {
       "additionalProperties": false,
       "properties": {
@@ -546,32 +374,6 @@
       ],
       "title": "TimezoneInfo",
       "type": "object"
-    },
-    "TableConfig": {
-      "properties": {
-        "enable_sorting": {
-          "default": true,
-          "title": "Enable Sorting",
-          "type": "boolean"
-        },
-        "enable_filtering": {
-          "default": false,
-          "title": "Enable Filtering",
-          "type": "boolean"
-        },
-        "enable_download": {
-          "default": false,
-          "title": "Enable Download",
-          "type": "boolean"
-        },
-        "hide_header": {
-          "default": false,
-          "title": "Hide Header",
-          "type": "boolean"
-        }
-      },
-      "title": "TableConfig",
-      "type": "object"
     }
   },
   "uiSchema": {
@@ -594,34 +396,6 @@
         "force_point_geometry"
       ]
     },
-    "Driver Ranking Table": {
-      "ui:order": [
-        "driver_ranking_sorted",
-        "driver_ranking_table"
-      ],
-      "driver_ranking_table": {
-        "ui:order": [
-          "columns",
-          "table_config"
-        ]
-      }
-    },
-    "Vehicle Usage Table": {
-      "vehicle_usage_table": {
-        "ui:order": [
-          "columns",
-          "table_config"
-        ]
-      }
-    },
-    "Fuel Refill Table": {
-      "refuel_table": {
-        "ui:order": [
-          "columns",
-          "table_config"
-        ]
-      }
-    },
     "ui:order": [
       "workflow_details",
       "er_client",
@@ -629,10 +403,6 @@
       "time_range",
       "patente",
       "events",
-      "KM Over Time Chart",
-      "Driver Ranking Table",
-      "Vehicle Usage Table",
-      "Fuel Refill Table",
       "get_template_path"
     ]
   },

@@ -901,6 +901,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             category="patente",
             agg_function="sum",
             time_interval="month",
+            color_palette=None,
             layout_style={
                 "title": "Kilómetros recorridos en el tiempo",
                 "title_x": 0.5,
@@ -1016,6 +1017,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             df=driver_ranking_data,
             column_name="Kilómetros recorridos",
             ascending=False,
+            na_position="last",
             **(params.get("driver_ranking_sorted") or {}),
         )
         .call()
@@ -1065,6 +1067,13 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         )
         .partial(
             dataframe=driver_ranking_columns,
+            columns=None,
+            table_config={
+                "enable_sorting": True,
+                "enable_filtering": True,
+                "enable_download": True,
+                "hide_header": False,
+            },
             **(params.get("driver_ranking_table") or {}),
         )
         .call()
@@ -1191,7 +1200,15 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             unpack_depth=1,
         )
         .partial(
-            dataframe=vehicle_usage_columns, **(params.get("vehicle_usage_table") or {})
+            dataframe=vehicle_usage_columns,
+            columns=None,
+            table_config={
+                "enable_sorting": True,
+                "enable_filtering": True,
+                "enable_download": True,
+                "hide_header": False,
+            },
+            **(params.get("vehicle_usage_table") or {}),
         )
         .call()
     )
@@ -1331,7 +1348,17 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             ],
             unpack_depth=1,
         )
-        .partial(dataframe=refuel_columns, **(params.get("refuel_table") or {}))
+        .partial(
+            dataframe=refuel_columns,
+            columns=None,
+            table_config={
+                "enable_sorting": True,
+                "enable_filtering": True,
+                "enable_download": True,
+                "hide_header": False,
+            },
+            **(params.get("refuel_table") or {}),
+        )
         .call()
     )
 

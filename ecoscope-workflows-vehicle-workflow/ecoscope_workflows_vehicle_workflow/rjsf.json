@@ -344,6 +344,25 @@
       "description": "Drivers ranked by total km and journey count.",
       "ecoscope:task_group": true,
       "properties": {
+        "driver_ranking_sorted": {
+          "additionalProperties": false,
+          "properties": {
+            "na_position": {
+              "default": "last",
+              "description": "Where to place NaN values in the sort",
+              "ecoscope:advanced": true,
+              "enum": [
+                "first",
+                "last"
+              ],
+              "title": "Na Position",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "type": "object",
+          "title": "Rank Drivers by KM"
+        },
         "driver_ranking_table": {
           "additionalProperties": false,
           "properties": {
@@ -573,6 +592,10 @@
       ]
     },
     "Driver Ranking Table": {
+      "ui:order": [
+        "driver_ranking_sorted",
+        "driver_ranking_table"
+      ],
       "driver_ranking_table": {
         "ui:order": [
           "columns",

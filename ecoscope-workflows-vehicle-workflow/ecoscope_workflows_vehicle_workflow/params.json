@@ -332,6 +332,25 @@
       "type": "object",
       "title": ""
     },
+    "driver_ranking_sorted": {
+      "additionalProperties": false,
+      "properties": {
+        "na_position": {
+          "default": "last",
+          "description": "Where to place NaN values in the sort",
+          "ecoscope:advanced": true,
+          "enum": [
+            "first",
+            "last"
+          ],
+          "title": "Na Position",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object",
+      "title": "Rank Drivers by KM"
+    },
     "driver_ranking_table": {
       "additionalProperties": false,
       "properties": {
@@ -537,6 +556,7 @@
       "patente",
       "events",
       "km_over_time_chart",
+      "driver_ranking_sorted",
       "driver_ranking_table",
       "vehicle_usage_table",
       "refuel_table",

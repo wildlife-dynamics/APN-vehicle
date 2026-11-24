@@ -14,11 +14,16 @@ requirements:
     channel: conda-forge
 
   - name: ecoscope-workflows-ext-apn
-    version: "0.0.30"
+    version: "0.0.34"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 
 rjsf-overrides:
   properties:
+    get_template_path.title: Report Template
+    get_template_path.properties.var.title: Template Path
+    get_template_path.properties.var.description: Path or URL to the .docx template used for the report.
+    get_template_path.properties.var.default: "https://raw.githubusercontent.com/wildlife-dynamics/APN-vehicle/main/resources/templates/vehicle_report_template.docx"
+    get_template_path.properties.var.ecoscope:advanced: true
     patente.properties.var.title: "Patente"
     Driver Ranking Table.properties.driver_ranking_table.title: ""
     Driver Ranking Table.properties.driver_ranking_table.properties.table_config.properties.enable_sorting.default: true
@@ -47,6 +52,11 @@ workflow:
   - name: Data Source
     id: er_client
     task: set_er_connection
+
+  - id: user_details
+    task: get_user_me
+    partial:
+      client: ${{ workflow.er_client.return }}
 
   - name: Define Base Maps
     id: base_maps
@@ -95,7 +105,7 @@ workflow:
         - geometry
         - event_details
       event_types:
-        - libro_diario_vehicular_v2
+        - libro_diario_vehicular  # Libro diario vehicular (daily vehicle log); v2 was removed
       include_details: true
       raise_on_empty: false
       include_updates: false
@@ -123,6 +133,8 @@ workflow:
           df: ${{ workflow.processed_events.return }}
           column_name: event_details
           field_name_options:
+            - vehiculo_no_listado_patente  # typed plate, only set for an unlisted vehicle
+            - vehiculo_patente
             - Patente
           output_column_name: patente
           output_type: str
@@ -173,6 +185,7 @@ workflow:
           df: ${{ workflow.extract_km_llegada.return }}
           column_name: event_details
           field_name_options:
+            - cantidad_de_litros_cargados
             - Litros_cargados
           output_column_name: litros_cargados
           output_type: float
@@ -185,6 +198,7 @@ workflow:
           df: ${{ workflow.extract_litros.return }}
           column_name: event_details
           field_name_options:
+            - tipo_de_combustible_cargado
             - Tipo_de_combustible
           output_column_name: tipo_combustible
           output_type: str
@@ -196,7 +210,7 @@ workflow:
         partial:
           df: ${{ workflow.extract_tipo_combustible.return }}
           column_name: event_details
-          field_name: Pasajeros
+          field_name: ocupantes_del_vehiculo
           output_column_name: ocupantes
 
       - name: Extract Trip Purpose
@@ -206,6 +220,7 @@ workflow:
           df: ${{ workflow.extract_ocupantes.return }}
           column_name: event_details
           field_name_options:
+            - motivo_del_desplazamiento
             - Motivo_del_desplazamiento
           output_column_name: objetivo
           output_type: str
@@ -226,6 +241,7 @@ workflow:
           df: ${{ workflow.format_objetivo.return }}
           column_name: event_details
           field_name_options:
+            - origen
             - Origen_del_desplazamiento
           output_column_name: origen
           output_type: str
@@ -238,6 +254,7 @@ workflow:
           df: ${{ workflow.extract_origen.return }}
           column_name: event_details
           field_name_options:
+            - destino
             - Destino
           output_column_name: destino
           output_type: str
@@ -250,6 +267,7 @@ workflow:
           df: ${{ workflow.extract_destino.return }}
           column_name: event_details
           field_name_options:
+            - fecha_y_hora_del_regreso
             - Regreso
           output_column_name: regreso
           output_type: str
@@ -292,7 +310,7 @@ workflow:
           fan_out: true
 
       - name: Calculate KM Travelled per Journey
-        id: km_por_viaje
+        id: km_por_viaje_raw
         task: apply_arithmetic_operation_over_rows
         partial:
           df: ${{ workflow.extract_responsable_recarga.return }}
@@ -300,6 +318,14 @@ workflow:
           column_b: km_salida
           output_column: km_viaje
           operation: subtract
+
+      # A return odometer lower than the departure one is a typo; don't let it skew the totals
+      - name: Ignore Impossible Trip Distances
+        id: km_por_viaje
+        task: blank_negative_values
+        partial:
+          df: ${{ workflow.km_por_viaje_raw.return }}
+          column: km_viaje
 
   - title: Vehicle Statistics Cards
     type: task-group
@@ -452,14 +478,22 @@ workflow:
               decimal_places: 0
             - display_name: "Cantidad de desplazamientos"
               aggregator: count
-              column: km_viaje
+              column: time  # every trip has a time; km is missing when an odometer reading is
               decimal_places: 0
+
+      - name: Rank Drivers by KM
+        id: driver_ranking_sorted
+        task: sort_values
+        partial:
+          df: ${{ workflow.driver_ranking_data.return }}
+          column_name: "Kilómetros recorridos"
+          ascending: false
 
       - name: Rename Driver Column
         id: driver_ranking_columns
         task: map_columns
         partial:
-          df: ${{ workflow.driver_ranking_data.return }}
+          df: ${{ workflow.driver_ranking_sorted.return }}
           raise_if_not_found: false
           retain_columns:
             - chofer
@@ -498,11 +532,21 @@ workflow:
     type: task-group
     description: "Full trip log for the selected vehicle."
     tasks:
+      - name: Show Trip Dates in Local Time
+        id: vehicle_usage_dates
+        task: format_datetime_columns
+        partial:
+          df: ${{ workflow.km_por_viaje.return }}
+          columns:
+            - time
+            - regreso
+          timezone: ${{ workflow.get_timezone.return }}
+
       - name: Select Columns for Vehicle Usage Table
         id: vehicle_usage_columns
         task: map_columns
         partial:
-          df: ${{ workflow.km_por_viaje.return }}
+          df: ${{ workflow.vehicle_usage_dates.return }}
           raise_if_not_found: false
           retain_columns:
             - time
@@ -553,11 +597,27 @@ workflow:
     type: task-group
     description: "Fuel refill events for the selected vehicle."
     tasks:
+      - name: Keep Only Trips With a Refuel
+        id: refuel_rows
+        task: keep_rows_with_value
+        partial:
+          df: ${{ workflow.km_por_viaje.return }}
+          column: litros_cargados
+
+      - name: Show Refuel Dates in Local Time
+        id: refuel_dates
+        task: format_datetime_columns
+        partial:
+          df: ${{ workflow.refuel_rows.return }}
+          columns:
+            - time
+          timezone: ${{ workflow.get_timezone.return }}
+
       - name: Select Columns for Fuel Refill Table
         id: refuel_columns
         task: map_columns
         partial:
-          df: ${{ workflow.km_por_viaje.return }}
+          df: ${{ workflow.refuel_dates.return }}
           raise_if_not_found: false
           retain_columns:
             - time
@@ -598,9 +658,55 @@ workflow:
           title: "Recargas de combustible"
           data: ${{ workflow.refuel_table_html.return }}
 
+  - name: Get Report Template Path
+    id: get_template_path
+    task: set_string_var
+
+  - id: norm_template_path
+    task: remove_file_scheme
+    partial:
+      path: ${{ workflow.get_template_path.return }}
+
+  - id: norm_output_dir
+    task: remove_file_scheme
+    partial:
+      path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+
+  - title: Vehicle Report
+    type: task-group
+    description: "Generates a DOCX report of this vehicle's activity using only the tables and stats already computed above."
+    tasks:
+      - id: generate_word_doc
+        task: generate_vehicle_report
+        skipif:
+          conditions:
+            - never  # one empty widget shouldn't skip the whole report
+        partial:
+          patente: ${{ workflow.patente.return }}
+          time_range: ${{ workflow.time_range.return }}
+          total_journeys: ${{ workflow.total_journeys.return }}
+          total_km: ${{ workflow.total_km.return }}
+          total_fuel: ${{ workflow.total_fuel_q.return }}
+          avg_occupants: ${{ workflow.avg_occupants.return }}
+          vehicle_usage_table: ${{ workflow.vehicle_usage_columns.return }}
+          driver_ranking_table: ${{ workflow.driver_ranking_columns.return }}
+          refuel_table: ${{ workflow.refuel_columns.return }}
+          user_details: ${{ workflow.user_details.return }}
+          template_path: ${{ workflow.norm_template_path.return }}
+          output_dir: ${{ workflow.norm_output_dir.return }}
+          km_over_time_chart_html: ${{ workflow.km_over_time_chart_html.return }}  # the task screenshots it
+
+  # the Word report, offered for download with the dashboard (as in APN-patrol_event)
+  - name: Report files
+    id: report_files
+    task: create_files_single_view
+    partial:
+      files:
+        - ${{ workflow.generate_word_doc.return }}
+
   - name: Create Dashboard
     id: dashboard
-    task: gather_apn_dashboard
+    task: gather_dashboard
     partial:
       details: ${{ workflow.workflow_details.return }}
       widgets:
@@ -613,3 +719,4 @@ workflow:
         - ${{ workflow.vehicle_usage_sv.return }}
         - ${{ workflow.refuel_sv.return }}
       time_range: ${{ workflow.time_range.return }}
+      files: ${{ workflow.report_files.return }}
